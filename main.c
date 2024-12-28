@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "dataGenerator.h"
+#include "ModelBuilder.h"
 
 int main() {
 
@@ -16,6 +17,11 @@ int main() {
   // Write data to files
   exportClassificationData(trainData);
   exportClusteringData(clusterData);
+
+
+  // ----- Build model(s) -----
+  build2LayerNetwork(trainData);
+
 
 	printf("Program finished");
 	return 0;

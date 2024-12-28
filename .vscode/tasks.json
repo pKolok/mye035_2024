@@ -9,6 +9,7 @@
         "-g",
         "${fileDirname}/main.c",        // Explicitly include main.c
         "${fileDirname}/dataGenerator.c", // Explicitly include dateGenerator.c
+        "${fileDirname}/ModelBuilder.c", // Explicitly include ModelBuilder.c
         "-o",
         "${fileDirname}\\${fileBasenameNoExtension}.exe"
       ],
