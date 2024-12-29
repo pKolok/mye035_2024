@@ -2,46 +2,30 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "ModelBuilder.h"
+#include "ModelBuilderPT2.h"
 #include "dataGenerator.h"
 
 #define D 2
 #define K 4
 #define H1 3
 #define H2 3
-#define H3 3
 #define activation_function "tanh"
 // #define activation_function "relu"
 
-struct ModelBuilder {
-  
-};
+static float w_h1[H1][D];
+static float w0_h1[H1];
+static float u_h1[H1] = { 0 };
+static float y_h1[H1] = { 0 };
+static float w_h2[H2][H1];
+static float w0_h2[H2];
+static float u_h2[H2] = { 0 };
+static float y_h2[H2] = { 0 };
+static float w_exit[K][H2];
+static float w0_exit[K];
+static float u_exit[K] = { 0 };
+static float y_exit[K] = { 0 };
 
-float w_h1[H1][D];
-float w0_h1[H1];
-float u_h1[H1] = { 0 };
-float y_h1[H1] = { 0 };
-float w_h2[H2][H1];
-float w0_h2[H2];
-float u_h2[H2] = { 0 };
-float y_h2[H2] = { 0 };
-float w_h3[H3][H2];
-float w0_h3[H3];
-float u_h3[H3] = { 0 };
-float y_h3[H3] = { 0 };
-float w_exit_pt2[K][H2];
-float w_exit_pt3[K][H3];
-float w0_exit[K];
-float u_exit[K] = { 0 };
-float y_exit[K] = { 0 };
-
-void build2LayerNetwork(float data[4000][3]) {
-  initialiseWeights();
-
-  forwardPassPt2(data[0], 2, y_exit, 4);
-}
-
-void initialiseWeights() {
+static void initialiseWeights() {
   // Initialise level 1 weights (w_h1 & w0_h1)
   for (int i = 0; i < H1; ++i) {
     w0_h1[i] = generateRandomFloat(-1, 1);
@@ -58,29 +42,18 @@ void initialiseWeights() {
     }
   }
 
-  // Initialise level 3 weights (w_h3 & w0_h3)
-  for (int i = 0; i < H3; ++i) {
-    w0_h3[i] = generateRandomFloat(-1, 1);
-    for (int j = 0; j < H2; ++j) {
-      w_h3[i][j] = generateRandomFloat(-1, 1);
-    }
-  }
-
-  // Initialise pt2 & pt3 exit weights (w_exit_pt2 & w_exit_pt3)
+  // Initialise pt2 & pt3 exit weights (w_exit)
   for (int i = 0; i < K; ++i) {
     w0_exit[i] = generateRandomFloat(-1, 1);
     for (int j = 0; j < H2; ++j) {
-      w_exit_pt2[i][j] = generateRandomFloat(-1, 1);
-    }
-    for (int k = 0; k < H3; ++k) {
-      w_exit_pt3[i][k] = generateRandomFloat(-1, 1);
+      w_exit[i][j] = generateRandomFloat(-1, 1);
     }
   }
 
   return;
 }
 
-void forwardPassPt2(float *x, int d, float *y, int k) {
+static void forwardPass(float *x, int d, float *y, int k) {
   // Level 1 (tanh or reLu)
   for (int i = 0; i < H1; ++i) {
     for (int j = 0; j < d; ++j) {
@@ -115,7 +88,7 @@ void forwardPassPt2(float *x, int d, float *y, int k) {
   float u_exit_sum = 0.0;
   for (int i = 0; i < k; ++i) {
     for (int j = 0; j < H2; ++j) {
-      u_exit[i] += y_h2[j] * w_exit_pt2[i][j];
+      u_exit[i] += y_h2[j] * w_exit[i][j];
     }
     u_exit[i] += w0_exit[i];
     u_exit_sum += exp(u_exit[i]);
@@ -124,4 +97,10 @@ void forwardPassPt2(float *x, int d, float *y, int k) {
     y[i] = exp(u_exit[i]) / u_exit_sum;
   }
 
+}
+
+void build2LayerNetwork(float data[4000][3]) {
+  initialiseWeights();
+
+  forwardPass(data[0], 2, y_exit, 4);
 }

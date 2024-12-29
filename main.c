@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "dataGenerator.h"
-#include "ModelBuilder.h"
+#include "ModelBuilderPT2.h"
+#include "ModelBuilderPT3.h"
 
 int main() {
 
@@ -21,6 +22,7 @@ int main() {
 
   // ----- Build model(s) -----
   build2LayerNetwork(trainData);
+  build3LayerNetwork(trainData);
 
 
 	printf("Program finished");
