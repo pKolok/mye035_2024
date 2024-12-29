@@ -4,7 +4,9 @@
         "stdlib.h": "c",
         "datagenerator.h": "c",
         "modelbuilder.h": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "modelbuilderpt3.h": "c",
+        "modelbuilderpt2.h": "c"
     },
     "C_Cpp.default.compilerPath": "C:\\msys64\\ucrt64\\bin\\gcc.exe"
 }

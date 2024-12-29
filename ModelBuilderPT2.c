@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "ModelBuilder.h"
 #include "ModelBuilderPT2.h"
 #include "dataGenerator.h"
 
@@ -12,6 +13,7 @@
 #define activation_function "tanh"
 // #define activation_function "relu"
 
+static float data[4000][7] = { 0 };
 static float w_h1[H1][D];
 static float w0_h1[H1];
 static float u_h1[H1] = { 0 };
@@ -25,6 +27,7 @@ static float w0_exit[K];
 static float u_exit[K] = { 0 };
 static float y_exit[K] = { 0 };
 
+/* --------------------- Static (i.e. "private") methods -------------------- */
 static void initialiseWeights() {
   // Initialise level 1 weights (w_h1 & w0_h1)
   for (int i = 0; i < H1; ++i) {
@@ -99,7 +102,10 @@ static void forwardPass(float *x, int d, float *y, int k) {
 
 }
 
-void build2LayerNetwork(float data[4000][3]) {
+/* ---------------------------- Public methods ------------------------------ */
+void build2LayerNetwork(float inputData[4000][3]) {
+  transformData(inputData, data);
+
   initialiseWeights();
 
   forwardPass(data[0], 2, y_exit, 4);
