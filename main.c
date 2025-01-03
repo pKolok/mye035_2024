@@ -24,7 +24,6 @@ int main() {
   build2LayerNetwork(trainData);
   build3LayerNetwork(trainData);
 
-
 	printf("Program finished");
 	return 0;
 }

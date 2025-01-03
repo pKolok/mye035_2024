@@ -7,38 +7,48 @@
 #include "ModelBuilderPT2.h"
 #include "dataGenerator.h"
 
+#define N 4000
+#define B 32
 #define D 2
 #define K 4
 #define H1 3
 #define H2 3
 #define activation_function "tanh"
 // #define activation_function "relu"
+#define H 0.001
+#define THRESSHOLD 0.1
 
-static float categories[4000][4] = { 0 };
+static float categories[N][K] = { 0 };
 // Layer 1:
 static float w_h1[H1][D];
 static float w0_h1[H1];
 static float u_h1[H1] = { 0 };
 static float y_h1[H1] = { 0 };
 static float delta_h1[H1] = { 0 };
-static float theta_w_h1[H1][D] = { 0 };
-static float theta_w0_h1[H1] = { 0 };
+static float theta_Ew_h1[H1][D] = { 0 };
+static float theta_Ew0_h1[H1] = { 0 };
+static float theta_Ew_sum_h1[H1][D] = { 0 };
+static float theta_Ew0_sum_h1[H1] = { 0 };
 // Layer 2:
 static float w_h2[H2][H1];
 static float w0_h2[H2];
 static float u_h2[H2] = { 0 };
 static float y_h2[H2] = { 0 };
 static float delta_h2[H2] = { 0 };
-static float theta_w_h2[H2][H1] = { 0 };
-static float theta_w0_h2[H2] = { 0 };
+static float theta_Ew_h2[H2][H1] = { 0 };
+static float theta_Ew0_h2[H2] = { 0 };
+static float theta_Ew_sum_h2[H2][H1] = { 0 };
+static float theta_Ew0_sum_h2[H2] = { 0 };
 // Out layer:
 static float w_out[K][H2];
 static float w0_out[K];
 static float u_out[K] = { 0 };
 static float y_out[K] = { 0 };
 static float delta_out[K] = { 0 };
-static float theta_w_out[K][H2] = { 0 };
-static float theta_w0_out[K] = { 0 };
+static float theta_Ew_out[K][H2] = { 0 };
+static float theta_Ew0_out[K] = { 0 };
+static float theta_Ew_sum_out[K][H2] = { 0 };
+static float theta_Ew0_sum_out[K] = { 0 };
 
 /* --------------------- Static (i.e. "private") methods -------------------- */
 static void initialiseWeights() {
@@ -70,6 +80,11 @@ static void initialiseWeights() {
 }
 
 static void forwardPass(float *x, int d, float *y, int k) {
+  // Initialisations
+  memset(u_h1, 0, sizeof(u_h1));
+  memset(u_h2, 0, sizeof(u_h2));
+  memset(u_out, 0, sizeof(u_out));
+
   // Level 1 (tanh or reLu)
   for (int i = 0; i < H1; ++i) {
     for (int j = 0; j < d; ++j) {
@@ -125,9 +140,9 @@ static void backprop(float *x, int d, float *t, int k) {
 
     // Error/weight partial derivative
     for (int j = 0; j < H2; ++j) {
-      theta_w_out[i][j] = delta_out[i] * y_h2[j];
+      theta_Ew_out[i][j] = delta_out[i] * y_h2[j];
     }
-    theta_w0_out[i] = delta_out[i];
+    theta_Ew0_out[i] = delta_out[i];
   }
 
   // Level 2 (tanh or reLu)
@@ -150,9 +165,9 @@ static void backprop(float *x, int d, float *t, int k) {
 
     // Error/weight partial derivative
     for (int j = 0; j < H1; ++j) {
-      theta_w_h2[i][j] = delta_h2[i] * y_h1[j];
+      theta_Ew_h2[i][j] = delta_h2[i] * y_h1[j];
     }
-    theta_w0_h2[i] = delta_h2[i];
+    theta_Ew0_h2[i] = delta_h2[i];
   }
 
   // Level 1 (tanh or reLu)
@@ -175,22 +190,124 @@ static void backprop(float *x, int d, float *t, int k) {
     
     // Error/weight partial derivative
     for (int j = 0; j < d; ++j) {
-      theta_w_h1[i][j] = delta_h1[i] * x[j];
+      theta_Ew_h1[i][j] = delta_h1[i] * x[j];
     }
-    theta_w0_h1[i] = delta_h1[i];
+    theta_Ew0_h1[i] = delta_h1[i];
   }
 
 }
 
+static void initialiseWeightPartialDerivatives() {
+  memset(theta_Ew_sum_h1, 0, sizeof(theta_Ew_sum_h1));
+  memset(theta_Ew0_sum_h1, 0, sizeof(theta_Ew0_sum_h1));
+  memset(theta_Ew_sum_h2, 0, sizeof(theta_Ew_sum_h2));
+  memset(theta_Ew0_sum_h2, 0, sizeof(theta_Ew0_sum_h2));
+  memset(theta_Ew_sum_out, 0, sizeof(theta_Ew_sum_out));
+  memset(theta_Ew0_sum_out, 0, sizeof(theta_Ew0_sum_out));
+}
+
+static void accummulateWeightErrorPartialDerivatives() {
+  // Level 1
+  for (int i = 0; i < H1; ++i) {
+    for (int j = 0; j < D; ++j) {
+      theta_Ew_sum_h1[i][j] += theta_Ew_h1[i][j];
+    }
+    theta_Ew0_sum_h1[i] += theta_Ew0_h1[i];
+  }
+
+  // Level 2
+  for (int i = 0; i < H2; ++i) {
+    for (int j = 0; j < H1; ++j) {
+      theta_Ew_sum_h2[i][j] += theta_Ew_h2[i][j];
+    }
+    theta_Ew0_sum_h2[i] += theta_Ew0_h2[i];
+  }
+
+  // Level Out
+  for (int i = 0; i < K; ++i) {
+    for (int j = 0; j < H2; ++j) {
+      theta_Ew_sum_out[i][j] += theta_Ew_out[i][j];
+    }
+    theta_Ew0_sum_out[i] += theta_Ew0_out[i];
+  }
+}
+
+static void updateWeights() {
+  // Level 1
+  for (int i = 0; i < H1; ++i) {
+    for (int j = 0; j < D; ++j) {
+      w_h1[i][j] -= H * theta_Ew_sum_h1[i][j];
+    }
+    w0_h1[i] -= H * theta_Ew0_sum_h1[i];
+  }
+
+  // Level 2
+  for (int i = 0; i < H2; ++i) {
+    for (int j = 0; j < H1; ++j) {
+      w_h2[i][j] -= H * theta_Ew_sum_h2[i][j];
+    }
+    w0_h2[i] -= H * theta_Ew0_sum_h2[i];
+  }
+
+  // Level Out
+  for (int i = 0; i < K; ++i) {
+    for (int j = 0; j < H2; ++j) {
+      w_out[i][j] -= H * theta_Ew_sum_out[i][j];
+    }
+    w0_out[i] -= H * theta_Ew0_sum_out[i];
+  }
+}
+
+static void train(float inputData[N][3]) {
+  int epoch = 0;
+  float previousEpochError = 0.0;
+  float currentEpochError = 0.0;
+  float errorDelta = 0.0;
+  
+  do {
+    previousEpochError = currentEpochError;
+    currentEpochError = 0.0;
+
+    initialiseWeightPartialDerivatives();
+
+    for (int i = 0; i < N; ++i) {
+      forwardPass(inputData[i], D, y_out, K);
+      backprop(inputData[i], D, categories[i], K);
+      accummulateWeightErrorPartialDerivatives();
+      
+      if ((i+1) % B == 0 || i == N-1) {
+        updateWeights();
+        initialiseWeightPartialDerivatives();
+      }
+
+      float exampleError = 0.0;
+      for (int j = 0; j < K; ++j) {
+        exampleError += pow(delta_out[j], 2);
+      }
+      currentEpochError += exampleError;
+    }
+
+    currentEpochError /= 2;
+    errorDelta = abs(previousEpochError - currentEpochError);
+
+    printf("Epoch: %d. Error: %f. Error delta: %f\n", epoch, currentEpochError,
+      errorDelta);
+
+    epoch++;
+  } while (epoch < 800 || errorDelta > THRESSHOLD);
+}
+
 /* ---------------------------- Public methods ------------------------------ */
-void build2LayerNetwork(float inputData[4000][3]) {
+void build2LayerNetwork(float inputData[N][3]) {
   extractCategories(inputData, categories);
 
   initialiseWeights();
 
   // Test forward-pass
-  forwardPass(inputData[0], D, y_out, K);
+  // forwardPass(inputData[0], D, y_out, K);
 
   // Test backprop
-  backprop(inputData[0], D, categories[0], K);
+  // backprop(inputData[0], D, categories[0], K);
+  
+  train(inputData);
 }
