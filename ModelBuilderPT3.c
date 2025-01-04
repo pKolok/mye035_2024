@@ -19,7 +19,8 @@
 #define H 0.001
 #define THRESSHOLD 0.1
 
-static float categories[N][K] = { 0 };
+static float train_categories[N][K] = { 0 };
+static float test_categories[N][K] = { 0 };
 // Layer 1:
 static float w_h1[H1][D];
 static float w0_h1[H1];
@@ -337,6 +338,10 @@ static void updateWeights() {
 }
 
 static void train(float inputData[N][3]) {
+  printf("-----------------------------------------------------------------\n");
+  printf("Training of 3 hidden layers neural network starting...\n");
+  printf("-----------------------------------------------------------------\n");
+
   int epoch = 0;
   float previousEpochError = 0.0;
   float currentEpochError = 0.0;
@@ -350,7 +355,7 @@ static void train(float inputData[N][3]) {
 
     for (int i = 0; i < N; ++i) {
       forwardPass(inputData[i], D, y_out, K);
-      backprop(inputData[i], D, categories[i], K);
+      backprop(inputData[i], D, train_categories[i], K);
       accummulateWeightErrorPartialDerivatives();
       
       if ((i+1) % B == 0 || i == N-1) {
@@ -373,11 +378,41 @@ static void train(float inputData[N][3]) {
 
     epoch++;
   } while (epoch < 800 || errorDelta > THRESSHOLD);
+
+  printf("-----------------------------------------------------------------\n");
+  printf("Training of 3 hidden layers neural network completed!\n");
+  printf("-----------------------------------------------------------------\n");
+}
+
+static float test(float testData[N][3]) {
+  int correctAnswersCounter = 0;
+  float y_test_out[K] = { 0 };
+
+  for (int i = 0; i < N; ++i) {
+    forwardPass(testData[i], D, y_test_out, K);
+
+    // Chosen category is the one with the highest percentage
+    int maxIndex = 0;
+    for (int j = 0; j < K; ++j) {
+      if (y_test_out[j] > y_test_out[maxIndex]) {
+        maxIndex = j;
+      }
+    }
+
+    if (test_categories[i][maxIndex] == 1) {
+      correctAnswersCounter++;
+    }
+  }
+
+  float correctDecisionsPercentage = correctAnswersCounter/(float)N;
+  printf("The percentage of correct decisions is: %f\n\n",
+  correctDecisionsPercentage);
 }
 
 /* ---------------------------- Public methods ------------------------------ */
-void build3LayerNetwork(float inputData[N][3]) {
-  extractCategories(inputData, categories);
+void build3LayerNetwork(float trainData[N][3], float testData[N][3]) {
+  extractCategories(trainData, train_categories);
+  extractCategories(testData, test_categories);
   
   initialiseWeights();
 
@@ -387,5 +422,6 @@ void build3LayerNetwork(float inputData[N][3]) {
   // Test backprop
   // backprop(inputData[0], D, categories[0], K);
 
-  train(inputData);
+  train(trainData);
+  test(testData);
 }

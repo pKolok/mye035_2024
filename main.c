@@ -11,18 +11,22 @@ int main() {
 	float testData[4000][3];
 	createClassificationData(testData);
 
+  // Write classification data to files
+  exportClassificationData(trainData, "ClassificationTrainData.txt");
+  exportClassificationData(testData, "ClassificationTestData.txt");
+
+
   // Create clustering data
   float clusterData[1000][2];
   createClusteringData(clusterData);
 
-  // Write data to files
-  exportClassificationData(trainData);
+  // Write clustering data to files
   exportClusteringData(clusterData);
 
 
-  // ----- Build model(s) -----
-  build2LayerNetwork(trainData);
-  build3LayerNetwork(trainData);
+  // ----- Build classification model(s) -----
+  build2LayerNetwork(trainData, testData);
+  build3LayerNetwork(trainData, testData);
 
 	printf("Program finished");
 	return 0;

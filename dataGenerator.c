@@ -54,8 +54,8 @@ void createClusteringData(float data[1000][2]) {
 	};
 }
 
-void exportClassificationData(float data[4000][3]) {
-  FILE *file = fopen("ClassificationData.txt", "w");
+void exportClassificationData(float data[4000][3], char* title) {
+  FILE *file = fopen(title, "w");
   if (file == NULL) {
     printf("Error opening file\n");
     return;
