@@ -8,11 +8,7 @@
         "modelbuilderpt3.h": "c",
         "modelbuilderpt2.h": "c",
         "stdio.h": "c",
-        "kmeansbuilder.h": "c",
-        "time.h": "c",
-        "array": "c",
         "string": "c",
-        "string_view": "c"
     },
     "C_Cpp.default.compilerPath": "C:\\msys64\\ucrt64\\bin\\gcc.exe"
 }

@@ -9,9 +9,6 @@
         "-g",
         "${fileDirname}/main.c",        // Explicitly include main.c
         "${fileDirname}/dataGenerator.c",
-        "${fileDirname}/ModelBuilder.c",
-        "${fileDirname}/ModelBuilderPT2.c",
-        "${fileDirname}/ModelBuilderPT3.c",
         "${fileDirname}/KMeansBuilder.c",
         "-o",
         "${fileDirname}\\${fileBasenameNoExtension}.exe"
