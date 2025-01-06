@@ -2,6 +2,7 @@
 #include "dataGenerator.h"
 #include "ModelBuilderPT2.h"
 #include "ModelBuilderPT3.h"
+#include "KMeansBuilder.h"
 
 int main() {
 
@@ -15,7 +16,6 @@ int main() {
   exportClassificationData(trainData, "ClassificationTrainData.txt");
   exportClassificationData(testData, "ClassificationTestData.txt");
 
-
   // Create clustering data
   float clusterData[1000][2];
   createClusteringData(clusterData);
@@ -25,9 +25,15 @@ int main() {
 
 
   // ----- Build classification model(s) -----
-  build2LayerNetwork(trainData, testData);
-  build3LayerNetwork(trainData, testData);
+  // build2LayerNetwork(trainData, testData);
+  // build3LayerNetwork(trainData, testData);
 
-	printf("Program finished");
+
+  // ----- Build k-means model -----
+  buildKMeansModel(clusterData);
+
+  printf("=================================================================\n");
+	printf("======================== Program finished =======================\n");
+  printf("=================================================================\n");
 	return 0;
 }
