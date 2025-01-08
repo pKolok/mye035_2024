@@ -54,5 +54,7 @@ dkms.conf
 # Other
 *.txt
 *.docx
+*.xlsx
 *.pdf
 *.tmp
+*.png

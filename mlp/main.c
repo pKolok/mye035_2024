@@ -7,17 +7,19 @@ int main() {
 
   // Create train & test  classification data
   float trainData[4000][3];
-	createClassificationData(trainData);
-	float testData[4000][3];
-	createClassificationData(testData);
+	createClassificationTrainData(trainData);
+	float testData[4000][4];
+	createClassificationTestData(testData);
 
   // Write classification data to files
-  exportClassificationData(trainData, "ClassificationTrainData.txt");
-  exportClassificationData(testData, "ClassificationTestData.txt");
+  exportClassificationTrainData(trainData, "ClassificationTrainData.txt");
+  exportClassificationTestData(testData, "ClassificationTestData.txt");
 
    // ----- Build classification model(s) -----
   build2LayerNetwork(trainData, testData);
   build3LayerNetwork(trainData, testData);
+
+  exportTestData(testData, "ClassificationTestResults.txt");
 
   printf("=================================================================\n");
 	printf("======================== Program finished =======================\n");

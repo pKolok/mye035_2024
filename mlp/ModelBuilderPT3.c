@@ -8,14 +8,16 @@
 #include "dataGenerator.h"
 
 #define N 4000
-#define B 32
+#define B 20
 #define D 2
 #define K 4
-#define H1 3
-#define H2 3
-#define H3 3
-#define activation_function "tanh"
-// #define activation_function "relu"
+#define H1 10
+#define H2 10
+#define H3 10
+#define activation_function_Η1 "tanh"
+#define activation_function_Η2 "tanh"
+// #define activation_function_Η3 "tanh"
+#define activation_function_Η3 "relu"
 #define H 0.001
 #define THRESSHOLD 0.1
 
@@ -112,9 +114,9 @@ static void forwardPass(float *x, int d, float *y, int k) {
       u_h1[i] += x[j] * w_h1[i][j];
     }
     u_h1[i] += w0_h1[i];
-    if (strcmp(activation_function, "tanh") == 0) {
+    if (strcmp(activation_function_Η1, "tanh") == 0) {
       y_h1[i] = tanh(u_h1[i]);
-    } else if (strcmp(activation_function, "relu") == 0) {
+    } else if (strcmp(activation_function_Η1, "relu") == 0) {
       y_h1[i] = u_h1[i] > 0 ? u_h1[i] : 0;
     } else {
 	    printf("Invalid Activation Function");
@@ -128,9 +130,9 @@ static void forwardPass(float *x, int d, float *y, int k) {
       u_h2[i] += y_h1[j] * w_h2[i][j];
     }
     u_h2[i] += w0_h2[i];
-    if (strcmp(activation_function, "tanh") == 0) {
+    if (strcmp(activation_function_Η2, "tanh") == 0) {
       y_h2[i] = tanh(u_h2[i]);
-    } else if (strcmp(activation_function, "relu") == 0) {
+    } else if (strcmp(activation_function_Η2, "relu") == 0) {
       y_h2[i] = u_h2[i] > 0 ? u_h2[i] : 0;
     } else {
 	    printf("Invalid Activation Function");
@@ -138,15 +140,15 @@ static void forwardPass(float *x, int d, float *y, int k) {
     }
   }
 
-  // Level 2 (tanh or reLu)
+  // Level 3 (tanh or reLu)
   for (int i = 0; i < H3; ++i) {
     for (int j = 0; j < H2; ++j) {
       u_h3[i] += y_h2[j] * w_h3[i][j];
     }
     u_h3[i] += w0_h3[i];
-    if (strcmp(activation_function, "tanh") == 0) {
+    if (strcmp(activation_function_Η3, "tanh") == 0) {
       y_h3[i] = tanh(u_h3[i]);
-    } else if (strcmp(activation_function, "relu") == 0) {
+    } else if (strcmp(activation_function_Η3, "relu") == 0) {
       y_h3[i] = u_h3[i] > 0 ? u_h3[i] : 0;
     } else {
 	    printf("Invalid Activation Function");
@@ -185,9 +187,9 @@ static void backprop(float *x, int d, float *t, int k) {
   for (int i = 0; i < H3; ++i) {
     // Error
     float deriv = 0.0;
-    if (strcmp(activation_function, "tanh") == 0) {
+    if (strcmp(activation_function_Η3, "tanh") == 0) {
       deriv = 1 - pow(tanh(y_h3[i]), 2);
-    } else if (strcmp(activation_function, "relu") == 0) {
+    } else if (strcmp(activation_function_Η3, "relu") == 0) {
       deriv = y_h3[i] > 0 ? 1 : 0;
     } else {
 	    printf("Invalid Activation Function");
@@ -210,9 +212,9 @@ static void backprop(float *x, int d, float *t, int k) {
   for (int i = 0; i < H2; ++i) {
     // Error
     float deriv = 0.0;
-    if (strcmp(activation_function, "tanh") == 0) {
+    if (strcmp(activation_function_Η2, "tanh") == 0) {
       deriv = 1 - pow(tanh(y_h2[i]), 2);
-    } else if (strcmp(activation_function, "relu") == 0) {
+    } else if (strcmp(activation_function_Η2, "relu") == 0) {
       deriv = y_h2[i] > 0 ? 1 : 0;
     } else {
 	    printf("Invalid Activation Function");
@@ -235,9 +237,9 @@ static void backprop(float *x, int d, float *t, int k) {
   for (int i = 0; i < H1; ++i) {
     // Error
     float deriv = 0.0;
-    if (strcmp(activation_function, "tanh") == 0) {
+    if (strcmp(activation_function_Η1, "tanh") == 0) {
       deriv = 1 - pow(tanh(y_h1[i]), 2);
-    } else if (strcmp(activation_function, "relu") == 0) {
+    } else if (strcmp(activation_function_Η1, "relu") == 0) {
       deriv = y_h1[i] > 0 ? 1 : 0;
     } else {
 	    printf("Invalid Activation Function");
@@ -384,7 +386,7 @@ static void train(float inputData[N][3]) {
   printf("-----------------------------------------------------------------\n");
 }
 
-static float test(float testData[N][3]) {
+static float test(float testData[N][4]) {
   int correctAnswersCounter = 0;
   float y_test_out[K] = { 0 };
 
@@ -401,6 +403,7 @@ static float test(float testData[N][3]) {
 
     if (test_categories[i][maxIndex] == 1) {
       correctAnswersCounter++;
+      testData[i][3] = 1.0;
     }
   }
 
@@ -410,17 +413,17 @@ static float test(float testData[N][3]) {
 }
 
 /* ---------------------------- Public methods ------------------------------ */
-void build3LayerNetwork(float trainData[N][3], float testData[N][3]) {
-  extractCategories(trainData, train_categories);
-  extractCategories(testData, test_categories);
+void build3LayerNetwork(float trainData[N][3], float testData[N][4]) {
+  extractTrainCategories(trainData, train_categories);
+  extractTestCategories(testData, test_categories);
   
   initialiseWeights();
 
   // Test forward-pass
-  // forwardPass(inputData[0], D, y_out, K);
+  // forwardPass(trainData[0], D, y_out, K);
   
   // Test backprop
-  // backprop(inputData[0], D, categories[0], K);
+  // backprop(trainData[0], D, train_categories[0], K);
 
   train(trainData);
   test(testData);
