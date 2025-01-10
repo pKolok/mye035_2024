@@ -4,7 +4,7 @@
 
 int main() {
 
-   // Create clustering data
+  // Create clustering data
   float clusterData[1000][2];
   createClusteringData(clusterData);
 

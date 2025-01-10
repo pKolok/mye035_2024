@@ -5,7 +5,7 @@
 
 #include "ModelBuilder.h"
 #include "ModelBuilderPT2.h"
-#include "dataGenerator.h"
+#include "DataGenerator.h"
 
 #define N 4000
 #define B 20

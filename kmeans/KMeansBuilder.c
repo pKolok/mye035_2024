@@ -123,9 +123,16 @@ void exportCenterCoordinates(float centerCoords[M][2]) {
 }
 
 void buildKMeansModel(float clusterData[N][2]) {
+  printf("-----------------------------------------------------------------\n");
+  printf("----------------- Executing k-means for M = %d ------------------\n",
+  M);
+  printf("-----------------------------------------------------------------\n");
+
   float minError = FLT_MAX;
+  int minErrorRun = 0;
   float centerCoords[M][2] = { 0 };
   
+  // Program will be run 20 times
   for (int run = 0; run < 20; ++run) {
     initialiseCenters(clusterData);
 
@@ -157,6 +164,7 @@ void buildKMeansModel(float clusterData[N][2]) {
 
     if (error < minError) {
       minError = error;
+      minErrorRun = run;
       for (int c = 0; c < M; ++c) {
         centerCoords[c][0] = centers[c].x;
         centerCoords[c][1] = centers[c].y;
@@ -164,6 +172,9 @@ void buildKMeansModel(float clusterData[N][2]) {
     }
   }
 
+  printf("--------------\n");
+  printf(">>>>> The minimum clustering error is %f for run %d <<<<<\n",
+    minError, minErrorRun);
   exportCenterCoordinates(centerCoords);
 
 }
